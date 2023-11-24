@@ -398,10 +398,12 @@ class _ResultCollection(dict):
             self.register_key(key, meta, value)
 
         # check the stored metadata and the current one match
-        elif meta != self[key].meta:
-            raise MisconfigurationException(
-                f"You called `self.log({name}, ...)` twice in `{fx}` with different arguments. This is not allowed"
-            )
+        else:
+            torch._dynamo.graph_break()
+            if meta != self[key].meta:
+                raise MisconfigurationException(
+                    f"You called `self.log({name}, ...)` twice in `{fx}` with different arguments. This is not allowed"
+                )
 
         batch_size = self._extract_batch_size(self[key], batch_size, meta)
         self.update_metrics(key, value, batch_size)
